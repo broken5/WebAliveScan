@@ -172,6 +172,17 @@ def get_ports(port):
 
 
 def run(file, port):
+    """
+    Broken5
+
+    Example:
+        python3 webscan.py --file=test.txt --port=80,443,8080,8989
+        python3 webscan.py --file=test.txt --port=default
+        python3 webscan.py --file=test.txt --port=large
+    :param file: 域名文件路径
+    :param port: 请求端口类型(default、small、medium，large)
+    :return:
+    """
     urls = []
     [urls.append(i.strip()) for i in open(file).readlines()]
     ports = get_ports(port)
