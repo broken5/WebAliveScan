@@ -1,5 +1,6 @@
 import random
 import requests
+import time
 import functools
 import urllib3
 import chardet
@@ -112,12 +113,8 @@ def request_callback(obj, index, datas, tqdm_tmp):
                 banner = None
             else:
                 headers = resp.headers
-                banner = str({'Server': headers.get('Server'),
-                              'Via': headers.get('Via'),
-                              'X-Powered-By': headers.get('X-Powered-By')})
-                banner = banner[1:-1]
                 title = get_title(text).strip()
-            f_csv.writerow([index, datas[index]['url'], status, title, banner])
+            f_csv.writerow([index, datas[index]['url'], status, title])
         else:
             pass
 
@@ -196,10 +193,11 @@ def run(file, port):
 
 
 if __name__ == '__main__':
-    f = open('results.csv', 'w', newline='')
+    ct = time.localtime()
+    t = str(ct.tm_year) + '_' + str(ct.tm_mon) + '_' + str(ct.tm_mday) + '_' + str(ct.tm_hour) + '_' + str(ct.tm_min)
+    csv_filename = 'results_' + t + '.csv'
+    f = open(csv_filename, 'w', newline='')
     f_csv = csv.writer(f)
-    header = ['id', 'url', 'status', 'title', 'banner']
+    header = ['id', 'url', 'status', 'title']
     f_csv.writerow(header)
     fire.Fire(run)
-
-
