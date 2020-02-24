@@ -1,3 +1,5 @@
+import pathlib
+
 default_ports = {80}  # 默认使用
 small_ports = {80, 443, 8000, 8080, 8443}
 medium_ports = {80, 81, 443, 591, 2082, 2087, 2095, 2096, 3000, 8000, 8001,
@@ -12,3 +14,13 @@ large_ports = {80, 81, 300, 443, 591, 593, 832, 888, 981, 1010, 1311, 2082,
                20720, 28017}  # 可以在这里面添加端口
 ports = {'default': default_ports, 'small': small_ports,
          'medium': medium_ports, 'large': large_ports}
+
+limit_open_conn = 0
+verify_ssl = False
+allow_redirects = True
+limit_per_host = 30
+sockread_timeout = 3  # 每个请求socket读取超时时间，默认5秒
+sockconn_timeout = 3  # 每个请求socket连接超时时间，默认5秒
+threads = 1024
+realpath = pathlib.Path(__file__).parent
+result_save_path = realpath.joinpath('results')
