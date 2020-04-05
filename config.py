@@ -14,6 +14,7 @@ large_ports = {80, 81, 300, 443, 591, 593, 832, 888, 981, 1010, 1311, 2082,
                20720, 28017}  # 可以在这里面添加端口
 ports = {'default': default_ports, 'small': small_ports,
          'medium': medium_ports, 'large': large_ports}
+ignore_status_code = [400]
 
 limit_open_conn = 0
 verify_ssl = False

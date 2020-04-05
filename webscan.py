@@ -1,4 +1,4 @@
-from lib.common.request3 import Request
+from lib.common.request import Request
 from lib.common.output import Output
 import fire
 

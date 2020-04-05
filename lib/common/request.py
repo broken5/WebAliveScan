@@ -1,20 +1,92 @@
-import asyncio
-import functools
+from gevent import monkey, pool; monkey.patch_all()
+from lib.utils.FileUtils import *
 import config
-import aiohttp
-from aiohttp import ClientSession
-from bs4 import BeautifulSoup
+import chardet
+import time
 import random
+import urllib3
+import requests
+import csv
+from bs4 import BeautifulSoup
+from lib.common.output import Output
+urllib3.disable_warnings()
 
 
 class Request:
     def __init__(self, target, port, output):
-        self.target = target
-        self.port = port
         self.output = output
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.run())
-        self.output.newLine("OK")
+        self.url_list = self.gen_url_list(target, port)
+        self.total = len(self.url_list)
+        self.output.config(config.threads, self.total)
+        self.output.target(target)
+        self.index = 0
+        self.results = []
+        self.main()
+        self.save_results()
+
+    def gen_url_list(self, target, port):
+        try:
+            # 获取文件内容
+            domain_list = open(target, 'r').readlines()
+
+            # 获取端口
+            ports = set()
+            if isinstance(port, set):
+                ports = port
+            elif isinstance(port, list):
+                ports = set(port)
+            elif isinstance(port, tuple):
+                ports = set(port)
+            elif isinstance(port, int):
+                if 0 <= port <= 65535:
+                    ports = {port}
+            elif port in {'default', 'small', 'medium', 'large'}:
+                ports = config.ports.get(port)
+            if not ports:  # 意外情况
+                ports = {80}
+
+            # 生成URL
+            url_list = []
+            protocols = ['http://', 'https://']
+            for domain in domain_list:
+                domain = domain.strip()
+                for port in ports:
+                    if port == 80:
+                        url = f'http://{domain}'
+                        url_list.append(url)
+                    elif port == 443:
+                        url = f'https://{domain}'
+                        url_list.append(url)
+                    else:
+                        for protocol in protocols:
+                            url = f'{protocol}{domain}:{port}'
+                            url_list.append(url)
+            return url_list
+        except FileNotFoundError as e:
+            self.output.debug(e)
+            exit()
+
+    def request(self, url):
+        try:
+            r = requests.get(url, timeout=5, headers=self.get_headers(), verify=False)
+            text = r.content.decode(encoding=chardet.detect(r.content)['encoding'])
+            title = self.get_title(text).strip().replace('\r', '').replace('\n', '')
+            status = r.status_code
+            size = FileUtils.sizeHuman(len(r.text))
+            if status in config.ignore_status_code:
+                raise Exception
+            self.output.statusReport(url, status, size, title)
+            result = {'title': title, 'url': url, 'status': status, 'size': size, 'reason': None}
+            self.results.append(result)
+            return r, text
+        except Exception as e:
+            return e
+
+    def fetch_url(self, url):
+        # print(url)
+        self.index = self.index + 1
+        self.output.lastPath(url,  self.index, self.total)
+        return self.request(url)
 
     def get_headers(self):
         """
@@ -83,140 +155,26 @@ class Request:
             return text
         return ''
 
-    def request_callback(self, obj, index, datas):
-        try:
-            result = obj.result()
-        except Exception as e:
-            datas[index]['reason'] = str(e.args)
-            datas[index]['valid'] = 0
-            pass
-        else:
-            if isinstance(result, tuple):
-                resp, text = result
+    def save_results(self):
+        now = str(time.time()).split('.')[0]
+        path = config.result_save_path.joinpath('results_%s.csv' % now)
+        headers = ['title', 'url', 'status', 'size', 'reason']
+        with open(path, 'w', newline='')as f:
+            f_csv = csv.DictWriter(f, headers)
+            f_csv.writeheader()
+            f_csv.writerows(self.results)
 
-                reason = resp.reason
-                status = resp.status
-                if resp.status == 400 or resp.status >= 500:
-                    title = None
-                    banner = None
-                    size = 0
-                else:
-                    headers = resp.headers
-                    title = self.get_title(text).strip()
-                    size = len(text)
-                # f_csv.writerow([index, datas[index]['url'], status, title])
-                self.output.statusReport(datas[index]['url'], resp, size)
-                # self.output.Last(datas[index]['url'])
-                # print([index, datas[index]['url'], status, title])
-            else:
-                pass
+    def main(self):
+        gevent_pool = pool.Pool(config.threads)
+        while self.url_list:
+            tasks = [gevent_pool.spawn(self.fetch_url, self.url_list.pop()) for i in range(len(self.url_list[:10000]))]
+            for task in tasks:
+                task.join()
+            del tasks
 
-    def gen_new_datas(self, datas, ports):
-        new_datas = []
-        protocols = ['http://', 'https://']
-        for subdomain in datas:
-            data = {'subdomain': subdomain}
-            for port in ports:
-                if port == 80:
-                    url = f'http://{subdomain}'
-                    data['id'] = None
-                    data['url'] = url
-                    data['port'] = 80
-                    new_datas.append(data)
-                    data = dict(data)  # 需要生成一个新的字典对象
-                elif port == 443:
-                    url = f'https://{subdomain}'
-                    data['id'] = None
-                    data['url'] = url
-                    data['port'] = 443
-                    new_datas.append(data)
-                    data = dict(data)  # 需要生成一个新的字典对象
-                else:
-                    for protocol in protocols:
-                        url = f'{protocol}{subdomain}:{port}'
-                        data['id'] = None
-                        data['url'] = url
-                        data['port'] = port
-                        new_datas.append(data)
-                        data = dict(data)  # 需要生成一个新的字典对象
-        return new_datas
 
-    def get_ports(self, port):
-        ports = set()
-        if isinstance(port, set):
-            ports = port
-        elif isinstance(port, list):
-            ports = set(port)
-        elif isinstance(port, tuple):
-            ports = set(port)
-        elif isinstance(port, int):
-            if 0 <= port <= 65535:
-                ports = {port}
-        elif port in {'default', 'small', 'medium', 'large'}:
-            ports = config.ports.get(port)
-        if not ports:  # 意外情况
-            ports = {80}
-        return ports
-
-    async def fetch(self, session, url):
-        timeout = aiohttp.ClientTimeout(total=None,
-                                        connect=None,
-                                        sock_read=config.sockread_timeout,
-                                        sock_connect=config.sockconn_timeout)
-        try:
-            async with session.get(url,
-                                   ssl=False,
-                                   allow_redirects=True,
-                                   timeout=timeout,
-                                   proxy=None) as resp:
-                try:
-                    # 先尝试用utf-8解码
-                    text = await resp.text(encoding='utf-8', errors='strict')
-                except UnicodeError:
-                    try:
-                        # 再尝试用gb18030解码
-                        text = await resp.text(encoding='gb18030',
-                                               errors='strict')
-                    except UnicodeError:
-                        # 最后尝试自动解码
-                        text = await resp.text(encoding=None,
-                                               errors='ignore')
-                return resp, text
-        except Exception as e:
-            # print(e)
-            return e
-
-    def get_limit_conn(self):
-        limit_open_conn = config.limit_open_conn
-        return limit_open_conn
-
-    def get_connector(self):
-        limit_open_conn = self.get_limit_conn()
-        return aiohttp.TCPConnector(ttl_dns_cache=300,
-                                    ssl=config.verify_ssl,
-                                    limit=limit_open_conn,
-                                    limit_per_host=config.limit_per_host)
-
-    async def run(self):
-        urls = []
-        [urls.append(i.strip()) for i in open(self.target).readlines()]
-        ports = self.get_ports(self.port)
-        new_datas = self.gen_new_datas(urls, ports)
-        header = self.get_headers()
-        connector = self.get_connector()
-        async with ClientSession(connector=connector, headers=header) as session:
-            tasks = []
-            for i, data in enumerate(new_datas):
-                url = data.get('url')
-                task = asyncio.ensure_future(self.fetch(session, url))
-                task.add_done_callback(functools.partial(self.request_callback,
-                                                         index=i,
-                                                         datas=new_datas))
-                tasks.append(task)
-            # 任务列表里有任务不空时才进行解析
-            if tasks:
-                # 等待所有task完成 错误聚合到结果列表里
-                futures = asyncio.as_completed(tasks)
-                for i, future in enumerate(futures):
-                    self.output.lastPath(new_datas[i]['url'], index=i, length=len(new_datas))
-                    await future
+# if __name__ == '__main__':
+#     start = datetime.datetime.now()
+#     request = Request('', '80', Output())
+#     request.main()
+#     end = datetime.datetime.now()
