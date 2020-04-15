@@ -7,6 +7,7 @@ import random
 import urllib3
 import requests
 import csv
+import queue
 from bs4 import BeautifulSoup
 from lib.common.output import Output
 urllib3.disable_warnings()
@@ -20,9 +21,21 @@ class Request:
         self.output.config(config.threads, self.total)
         self.output.target(target)
         self.index = 0
-        self.results = []
+        self.path = config.result_save_path.joinpath('results_%s.csv' % str(time.time()).split('.')[0])
         self.main()
-        self.save_results()
+
+    def gen_url_by_port(self, domain, port):
+        protocols = ['http://', 'https://']
+        if port == 80:
+            url = f'http://{domain}'
+            return url
+        elif port == 443:
+            url = f'https://{domain}'
+            return url
+        else:
+            for protocol in protocols:
+                url = f'{protocol}{domain}:{port}'
+                return url
 
     def gen_url_list(self, target, port):
         try:
@@ -47,20 +60,14 @@ class Request:
 
             # 生成URL
             url_list = []
-            protocols = ['http://', 'https://']
             for domain in domain_list:
                 domain = domain.strip()
+                if ':' in domain:
+                    domain, port = domain.split(':')
+                    url_list.append(self.gen_url_by_port(domain, int(port)))
+                    continue
                 for port in ports:
-                    if port == 80:
-                        url = f'http://{domain}'
-                        url_list.append(url)
-                    elif port == 443:
-                        url = f'https://{domain}'
-                        url_list.append(url)
-                    else:
-                        for protocol in protocols:
-                            url = f'{protocol}{domain}:{port}'
-                            url_list.append(url)
+                    url_list.append(self.gen_url_by_port(domain, port))
             return url_list
         except FileNotFoundError as e:
             self.output.debug(e)
@@ -77,7 +84,7 @@ class Request:
                 raise Exception
             self.output.statusReport(url, status, size, title)
             result = {'title': title, 'url': url, 'status': status, 'size': size, 'reason': None}
-            self.results.append(result)
+            self.save_result(result)
             return r, text
         except Exception as e:
             return e
@@ -155,18 +162,17 @@ class Request:
             return text
         return ''
 
-    def save_results(self):
-        now = str(time.time()).split('.')[0]
-        path = config.result_save_path.joinpath('results_%s.csv' % now)
+    def save_result(self, result):
         headers = ['title', 'url', 'status', 'size', 'reason']
-        with open(path, 'w', newline='')as f:
+        with open(self.path, 'a', newline='')as f:
             f_csv = csv.DictWriter(f, headers)
             f_csv.writeheader()
-            f_csv.writerows(self.results)
+            f_csv.writerow(result)
 
     def main(self):
         gevent_pool = pool.Pool(config.threads)
         while self.url_list:
+
             tasks = [gevent_pool.spawn(self.fetch_url, self.url_list.pop()) for i in range(len(self.url_list[:10000]))]
             for task in tasks:
                 task.join()
