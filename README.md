@@ -24,11 +24,12 @@ threads = 1024
 
 ##### v1.2增加单个目标自定义端口
 ```
-target.txt
+python3 webscan.py --target target.txt --port 80
 
-# 根据--port指定的端口来扫描
+target.txt
+# 扫描--port指定的80
 www.google.com
 
-# 只会扫描www.baidu.com的443端口
+# 扫描www.baidu.com的443
 www.baidu.com:443
 ```
