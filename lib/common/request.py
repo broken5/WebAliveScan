@@ -94,7 +94,6 @@ class Request:
             self.save_result(None, result)
             return r, text
         except Exception as e:
-            print(e)
             return e
 
     def fetch_url(self, url):
