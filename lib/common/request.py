@@ -29,7 +29,6 @@ class Request:
         if headers:
             f_csv.writerow(headers)
         elif result:
-            print(result)
             f_csv.writerow(result)
 
     def gen_url_by_port(self, domain, port):
