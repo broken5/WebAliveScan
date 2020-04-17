@@ -7,9 +7,7 @@ import random
 import urllib3
 import requests
 import csv
-import queue
 from bs4 import BeautifulSoup
-from lib.common.output import Output
 urllib3.disable_warnings()
 
 
@@ -22,7 +20,17 @@ class Request:
         self.output.target(target)
         self.index = 0
         self.path = config.result_save_path.joinpath('results_%s.csv' % str(time.time()).split('.')[0])
+        self.save_result(['title', 'url', 'status', 'size', 'reason'], None)
         self.main()
+
+    def save_result(self, headers, result):
+        f = open(self.path, 'a+', newline='')
+        f_csv = csv.writer(f)
+        if headers:
+            f_csv.writerow(headers)
+        elif result:
+            print(result)
+            f_csv.writerow(result)
 
     def gen_url_by_port(self, domain, port):
         protocols = ['http://', 'https://']
@@ -83,10 +91,11 @@ class Request:
             if status in config.ignore_status_code:
                 raise Exception
             self.output.statusReport(url, status, size, title)
-            result = {'title': title, 'url': url, 'status': status, 'size': size, 'reason': None}
-            self.save_result(result)
+            result = [title, url, status, size, None]
+            self.save_result(None, result)
             return r, text
         except Exception as e:
+            print(e)
             return e
 
     def fetch_url(self, url):
@@ -162,17 +171,9 @@ class Request:
             return text
         return ''
 
-    def save_result(self, result):
-        headers = ['title', 'url', 'status', 'size', 'reason']
-        with open(self.path, 'a', newline='')as f:
-            f_csv = csv.DictWriter(f, headers)
-            f_csv.writeheader()
-            f_csv.writerow(result)
-
     def main(self):
         gevent_pool = pool.Pool(config.threads)
         while self.url_list:
-
             tasks = [gevent_pool.spawn(self.fetch_url, self.url_list.pop()) for i in range(len(self.url_list[:10000]))]
             for task in tasks:
                 task.join()
