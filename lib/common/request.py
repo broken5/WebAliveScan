@@ -1,5 +1,6 @@
 from gevent import monkey, pool; monkey.patch_all()
 from lib.utils.FileUtils import *
+from lib.utils.tools import *
 import config
 import chardet
 import time
@@ -19,17 +20,11 @@ class Request:
         self.output.config(config.threads, self.total)
         self.output.target(target)
         self.index = 0
-        self.path = config.result_save_path.joinpath('results_%s.csv' % str(time.time()).split('.')[0])
-        self.save_result(['title', 'url', 'status', 'size', 'reason'], None)
+        self.alive_web = []
+        self.alive_path = config.result_save_path.joinpath('%s_alive_results.csv' % str(time.time()).split('.')[0])
+        self.brute_path = config.result_save_path.joinpath('%s_brute_results.csv' % str(time.time()).split('.')[0])
+        save_result(self.alive_path, ['title', 'url', 'status', 'size', 'reason'], None)
         self.main()
-
-    def save_result(self, headers, result):
-        f = open(self.path, 'a+', newline='')
-        f_csv = csv.writer(f)
-        if headers:
-            f_csv.writerow(headers)
-        elif result:
-            f_csv.writerow(result)
 
     def gen_url_by_port(self, domain, port):
         protocols = ['http://', 'https://']
@@ -91,7 +86,8 @@ class Request:
                 raise Exception
             self.output.statusReport(url, status, size, title)
             result = [title, url, status, size, None]
-            self.save_result(None, result)
+            self.alive_web.append(url)
+            save_result(self.alive_path, None, result)
             return r, text
         except Exception as e:
             return e

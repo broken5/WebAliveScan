@@ -67,13 +67,21 @@ class Output(object):
             else:
                 showPath = urllib.parse.urljoin("/", self.basePath)
                 showPath = urllib.parse.urljoin(showPath, path)
-            message = '[{0}] {1} - {2} - {3} - {4}'.format(
-                time.strftime('%H:%M:%S'),
-                status,
-                size.rjust(6, ' '),
-                showPath,
-                title
-            )
+            if title:
+                message = '[{0}] {1} - {2} - {3} - {4}'.format(
+                    time.strftime('%H:%M:%S'),
+                    status,
+                    size.rjust(6, ' '),
+                    showPath,
+                    title
+                )
+            else:
+                message = '[{0}] {1} - {2} - {3}'.format(
+                    time.strftime('%H:%M:%S'),
+                    status,
+                    size.rjust(6, ' '),
+                    showPath
+                )
             message = Fore.GREEN + message + Style.RESET_ALL
 
             self.newLine(message)
@@ -135,6 +143,13 @@ class Output(object):
     def target(self, target):
         config = Style.BRIGHT + Fore.YELLOW
         config += '\nTarget: {0}\n'.format(Fore.CYAN + target + Fore.YELLOW)
+        config += Style.RESET_ALL
+
+        self.newLine(config)
+
+    def bruteTarget(self, target):
+        config = Style.BRIGHT + Fore.YELLOW
+        config += '\nDirBrute Target: {0}\n'.format(Fore.CYAN + target + Fore.YELLOW)
         config += Style.RESET_ALL
 
         self.newLine(config)
