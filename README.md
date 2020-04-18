@@ -34,7 +34,7 @@ www.google.com
 www.baidu.com:443
 ```
 
-##### v1.2增加快速目录扫描
+##### v1.3增加快速目录扫描
 ```
 python3 webscan.py --target target.txt --port 80 --brute True
 
