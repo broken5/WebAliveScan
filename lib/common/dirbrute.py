@@ -13,7 +13,6 @@ class Dirbrute:
         self.output = output
         self.brute_path = path
         self.output.bruteTarget(target)
-        save_result(self.brute_path, ['url', 'status', 'size'], None)
         self.all_rules = []
 
     def format_url(self, path):

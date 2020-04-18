@@ -1,6 +1,7 @@
 from lib.common.request import Request
 from lib.common.output import Output
 from lib.common.dirbrute import Dirbrute
+from lib.utils.tools import *
 import fire
 
 
@@ -10,6 +11,7 @@ class Program(object):
         request = Request(target, port, output)
         if brute:
             output.newLine('')
+            save_result(request.brute_path, ['url', 'status', 'size'], None)
             for url in request.alive_web:
                 dirbrute = Dirbrute(url, output, request.brute_path)
                 dirbrute.run()
