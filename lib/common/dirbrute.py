@@ -14,6 +14,7 @@ class Dirbrute:
         self.brute_path = path
         self.output.bruteTarget(target)
         self.all_rules = []
+        self.brute_result_list = []
 
     def format_url(self, path):
         url = self.target
@@ -66,7 +67,8 @@ class Dirbrute:
                 self.output.statusReport(url, response_status, size)
         if not self.compare_rule(rule, response_status, response_html, response_content_type):
             return
-        save_result(self.brute_path, None, [url, response_status, size])
+        result = [url, response_status, size]
+        self.brute_result_list.append(result)
         self.output.statusReport(url, response_status, size, '')
         return [url, rule]
 

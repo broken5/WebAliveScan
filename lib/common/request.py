@@ -23,7 +23,7 @@ class Request:
         self.alive_web = []
         self.alive_path = config.result_save_path.joinpath('%s_alive_results.csv' % str(time.time()).split('.')[0])
         self.brute_path = config.result_save_path.joinpath('%s_brute_results.csv' % str(time.time()).split('.')[0])
-        save_result(self.alive_path, ['title', 'url', 'status', 'size', 'reason'], None)
+        self.alive_result_list = []
         self.main()
 
     def gen_url_by_port(self, domain, port):
@@ -87,7 +87,7 @@ class Request:
             self.output.statusReport(url, status, size, title)
             result = [title, url, status, size, None]
             self.alive_web.append(url)
-            save_result(self.alive_path, None, result)
+            self.alive_result_list.append(result)
             return r, text
         except Exception as e:
             return e
