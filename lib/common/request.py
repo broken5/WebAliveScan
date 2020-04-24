@@ -77,7 +77,8 @@ class Request:
 
     def request(self, url):
         try:
-            r = requests.get(url, timeout=5, headers=self.get_headers(), verify=False)
+            r = requests.get(url, timeout=config.timeout, headers=self.get_headers(), verify=config.verify_ssl,
+                             allow_redirects=config.allow_redirects)
             text = r.content.decode(encoding=chardet.detect(r.content)['encoding'])
             title = self.get_title(text).strip().replace('\r', '').replace('\n', '')
             status = r.status_code
@@ -168,14 +169,9 @@ class Request:
     def main(self):
         gevent_pool = pool.Pool(config.threads)
         while self.url_list:
-            tasks = [gevent_pool.spawn(self.fetch_url, self.url_list.pop()) for i in range(len(self.url_list[:10000]))]
+            tasks = [gevent_pool.spawn(self.fetch_url, self.url_list.pop())
+                     for i in range(len(self.url_list[:config.threads*10]))]
             for task in tasks:
                 task.join()
             del tasks
 
-
-# if __name__ == '__main__':
-#     start = datetime.datetime.now()
-#     request = Request('', '80', Output())
-#     request.main()
-#     end = datetime.datetime.now()

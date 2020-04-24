@@ -88,7 +88,6 @@ common_rules = {
         {'path': '/services/listServices', 'status': 200, 'type': 'text/html', 'tag': 'axis2-web'}
     ],
     'other': [
-        {'path': '/', 'status': 200}
     ]
 }
 
