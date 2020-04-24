@@ -8,6 +8,8 @@ pip3 install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
 ```
 python3 webscan.py --target target.txt --port 80
 python3 webscan.py --target target.txt --port large
+
+使用过程中遇到问题或者对脚本有啥想改进的想法可以加我QQ：2336490031备注WebAliveScan
 ```
 
 ##### v1.1增加忽略指定HTTP状态
@@ -33,6 +35,9 @@ www.google.com
 # 扫描www.baidu.com的443
 www.baidu.com:443
 ```
+
+
+
 
 ##### v1.3增加快速目录扫描
 ```
