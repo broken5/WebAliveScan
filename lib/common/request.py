@@ -86,7 +86,7 @@ class Request:
             if status in config.ignore_status_code:
                 raise Exception
             self.output.statusReport(url, status, size, title)
-            result = [title, url, status, size, None]
+            result = [title, url, str(status), size, '']
             self.alive_web.append(url)
             self.alive_result_list.append(result)
             return r, text

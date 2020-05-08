@@ -7,15 +7,17 @@ import fire
 
 class Program(object):
     def __init__(self, target, port, brute):
+
         output = Output()
         request = Request(target, port, output)
         save_result(request.alive_path, ['title', 'url', 'status', 'size', 'reason'], request.alive_result_list)
         if brute:
+            brute_result_list = []
             output.newLine('')
             for url in request.alive_web:
-                dirbrute = Dirbrute(url, output, request.brute_path)
+                dirbrute = Dirbrute(url, output, brute_result_list)
                 dirbrute.run()
-                save_result(dirbrute.brute_path, ['url', 'status', 'size'], dirbrute.brute_result_list)
+            save_result(request.brute_path, ['url', 'status', 'size'], brute_result_list)
 
 
 def run(target, port, brute=False):

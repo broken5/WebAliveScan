@@ -1,8 +1,21 @@
-import csv
+from lib.common.output import Output
 
 
 def save_result(path, headers, results):
-    f = open(path, 'w', newline='')
-    f_csv = csv.writer(f)
-    f_csv.writerow(headers)
-    f_csv.writerows(results)
+    data = ','.join(headers)
+    data += '\n'
+    for i in results:
+        line = (','.join(i)).rstrip(',')
+        data += line + '\n'
+    try:
+        with open(path, 'w', encoding="utf-8",
+                  errors='ignore', newline='') as file:
+            file.write(data)
+            return True
+    except TypeError:
+        with open(path, 'wb') as file:
+            file.write(data.encode())
+            return True
+    except Exception as e:
+        Output().error(e.args)
+        return False
