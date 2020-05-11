@@ -35,9 +35,10 @@ class Request:
             url = f'https://{domain}'
             return url
         else:
+            url = []
             for protocol in protocols:
-                url = f'{protocol}{domain}:{port}'
-                return url
+                url.append(f'{protocol}{domain}:{port}')
+            return url
 
     def gen_url_list(self, target, port):
         try:
@@ -66,10 +67,19 @@ class Request:
                 domain = domain.strip()
                 if ':' in domain:
                     domain, port = domain.split(':')
-                    url_list.append(self.gen_url_by_port(domain, int(port)))
-                    continue
-                for port in ports:
-                    url_list.append(self.gen_url_by_port(domain, port))
+                    url = self.gen_url_by_port(domain, int(port))
+                    if isinstance(url, list):
+                        url_list = url_list + url
+                    else:
+                        url_list.append(self.gen_url_by_port(domain, int(port)))
+                else:
+                    for port in ports:
+                        url = self.gen_url_by_port(domain, int(port))
+                        if isinstance(url, list):
+                            url_list = url_list + url
+                        else:
+                            url_list.append(self.gen_url_by_port(domain, int(port)))
+                    
             return url_list
         except FileNotFoundError as e:
             self.output.debug(e)
