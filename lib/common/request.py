@@ -71,14 +71,14 @@ class Request:
                     if isinstance(url, list):
                         url_list = url_list + url
                     else:
-                        url_list.append(self.gen_url_by_port(domain, int(port)))
+                        url_list.append(url)
                 else:
                     for port in ports:
                         url = self.gen_url_by_port(domain, int(port))
                         if isinstance(url, list):
-                            url_list = url_list + url
+                            url_list += url
                         else:
-                            url_list.append(self.gen_url_by_port(domain, int(port)))
+                            url_list.append(url)
                     
             return url_list
         except FileNotFoundError as e:
