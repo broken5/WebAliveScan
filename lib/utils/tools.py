@@ -8,8 +8,7 @@ def save_result(path, headers, results):
         line = (','.join(i)).rstrip(',')
         data += line + '\n'
     try:
-        with open(path, 'w', encoding="utf-8",
-                  errors='ignore', newline='') as file:
+        with open(path, 'w', errors='ignore', newline='') as file:
             file.write(data)
             return True
     except TypeError:

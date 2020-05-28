@@ -14,8 +14,8 @@ class Program(object):
         if brute:
             brute_result_list = []
             output.newLine('')
-            for url in request.alive_web:
-                dirbrute = Dirbrute(url, output, brute_result_list)
+            for info in request.alive_result_list:
+                dirbrute = Dirbrute(info[1], output, brute_result_list)
                 dirbrute.run()
             save_result(request.brute_path, ['url', 'status', 'size'], brute_result_list)
 

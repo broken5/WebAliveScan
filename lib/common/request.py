@@ -20,7 +20,6 @@ class Request:
         self.output.config(config.threads, self.total)
         self.output.target(target)
         self.index = 0
-        self.alive_web = []
         self.alive_path = config.result_save_path.joinpath('%s_alive_results.csv' % str(time.time()).split('.')[0])
         self.brute_path = config.result_save_path.joinpath('%s_brute_results.csv' % str(time.time()).split('.')[0])
         self.alive_result_list = []
@@ -97,7 +96,6 @@ class Request:
                 raise Exception
             self.output.statusReport(url, status, size, title)
             result = [title, url, str(status), size, '']
-            self.alive_web.append(url)
             self.alive_result_list.append(result)
             return r, text
         except Exception as e:
