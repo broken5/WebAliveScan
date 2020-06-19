@@ -1,5 +1,6 @@
 from lib.common.request import Request
 from lib.common.output import Output
+from lib.utils.wappalyzer import Wappalyzer
 from lib.common.dirbrute import Dirbrute
 from lib.utils.tools import *
 import fire
@@ -7,10 +8,11 @@ import fire
 
 class Program(object):
     def __init__(self, target, port, brute):
-
         output = Output()
-        request = Request(target, port, output)
-        save_result(request.alive_path, ['title', 'url', 'status', 'size', 'reason'], request.alive_result_list)
+        wappalyzer = Wappalyzer()
+        request = Request(target, port, output, wappalyzer)
+        output.resultOutput(f'Alive result save to: {request.alive_path}')
+        save_result(request.alive_path, ['url', 'title', 'status', 'size', 'server', 'language', 'application', 'frameworks', 'system'], request.alive_result_list)
         if brute:
             brute_result_list = []
             output.newLine('')

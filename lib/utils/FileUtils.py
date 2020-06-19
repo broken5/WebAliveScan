@@ -130,10 +130,10 @@ class FileUtils(object):
     def sizeHuman(num):
         base = 1024
         for x in ['B ', 'KB', 'MB', 'GB']:
-            if num < base and num > -base:
+            if base > num > -base:
                 return "%3.0f%s" % (num, x)
             num /= base
-        return "%3.0f %s" % (num, 'TB')
+        return "%3.0f%s" % (num, 'TB')
 
     @staticmethod
     def writeLines(fileName, lines):

@@ -5,8 +5,10 @@ def save_result(path, headers, results):
     data = ','.join(headers)
     data += '\n'
     for i in results:
-        line = (','.join(i)).rstrip(',')
-        data += line + '\n'
+        line = ''
+        for h in headers:
+            line += '"'+str(i[h]).replace('"', '""')+'",'
+        data += line.strip(',') + '\n'
     try:
         with open(path, 'w', errors='ignore', newline='') as file:
             file.write(data)

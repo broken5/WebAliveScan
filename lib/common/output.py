@@ -60,32 +60,28 @@ class Output(object):
         self.lastInLine = False
         sys.stdout.flush()
 
-    def statusReport(self, path, status, size, title):
+    def statusReport(self, url_info):
+        url = url_info['url']
+        status = url_info['status']
+        size = url_info['size']
+        title = url_info['title']
+        application = ','.join(url_info['application'])
+        server = ','.join(url_info['server'])
+        frameworks = ','.join(url_info['frameworks'])
+        language = ','.join(url_info['language'])
+        system = ','.join(url_info['system'])
         with self.mutex:
-            if self.basePath is None:
-                showPath = urllib.parse.urljoin("/", path)
-            else:
-                showPath = urllib.parse.urljoin("/", self.basePath)
-                showPath = urllib.parse.urljoin(showPath, path)
-            if title:
-                message = '[{0}] {1} - {2} - {3} - {4}'.format(
-                    time.strftime('%H:%M:%S'),
-                    status,
-                    size.rjust(6, ' '),
-                    showPath,
-                    title
-                )
-            else:
-                message = '[{0}] {1} - {2} - {3}'.format(
-                    time.strftime('%H:%M:%S'),
-                    status,
-                    size.rjust(6, ' '),
-                    showPath
-                )
-            message = Fore.GREEN + message + Style.RESET_ALL
-
+            url = f'{Style.BRIGHT}URL{Style.RESET_ALL}[{Fore.CYAN}{url}{Style.RESET_ALL}]'
+            status = f'{Style.BRIGHT}Status{Style.RESET_ALL}[{status}]'
+            size = f'{Style.BRIGHT}Size{Style.RESET_ALL}[{Fore.YELLOW}{size}{Style.RESET_ALL}]'
+            title = f' {Style.BRIGHT}Title{Style.RESET_ALL}[{Fore.RED}{title}{Style.RESET_ALL}]' if title else ''
+            application = f' {Style.BRIGHT}Application{Style.RESET_ALL}[{Fore.GREEN}{application}{Style.RESET_ALL}]' if application else ''
+            server = f' {Style.BRIGHT}Server{Style.RESET_ALL}[{Fore.GREEN}{server}{Style.RESET_ALL}]' if server else ''
+            frameworks = f' {Style.BRIGHT}Frameworks{Style.RESET_ALL}[{Fore.GREEN}{frameworks}{Style.RESET_ALL}]' if frameworks else ''
+            language = f' {Style.BRIGHT}Language{Style.RESET_ALL}[{Fore.GREEN}{language}{Style.RESET_ALL}]' if language else ''
+            system = f' {Style.BRIGHT}System{Style.RESET_ALL}[{Fore.GREEN}{system}{Style.RESET_ALL}]' if system else ''
+            message = f'[{time.strftime("%H:%M:%S")}] {url} {status} {size}{title}{application}{server}{frameworks}{language}{system}'
             self.newLine(message)
-
 
     def lastPath(self, path, index, length):
         with self.mutex:
@@ -150,6 +146,13 @@ class Output(object):
     def bruteTarget(self, target):
         config = Style.BRIGHT + Fore.YELLOW
         config += '\nDirBrute Target: {0}\n'.format(Fore.CYAN + target + Fore.YELLOW)
+        config += Style.RESET_ALL
+
+        self.newLine(config)
+
+    def resultOutput(self, _str):
+        config = Style.BRIGHT + Fore.YELLOW
+        config += '\n{0}\n'.format(Fore.GREEN + _str + Style.RESET_ALL)
         config += Style.RESET_ALL
 
         self.newLine(config)
