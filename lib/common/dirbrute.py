@@ -66,9 +66,9 @@ class Dirbrute:
                 self.output.statusReport(url, response_status, size)
         if not self.compare_rule(rule, response_status, response_html, response_content_type):
             return
-        result = [url, str(response_status), size]
-        self.brute_result_list.append(result)
-        self.output.statusReport(url, response_status, size, '')
+        url_info = {'url': url, 'status': response_status, 'size': size.strip()}
+        self.brute_result_list.append(url_info)
+        self.output.statusReport(url_info)
         return [url, rule]
 
     def run(self):

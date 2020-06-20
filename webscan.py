@@ -11,15 +11,16 @@ class Program(object):
         output = Output()
         wappalyzer = Wappalyzer()
         request = Request(target, port, output, wappalyzer)
-        output.resultOutput(f'Alive result save to: {request.alive_path}')
         save_result(request.alive_path, ['url', 'title', 'status', 'size', 'server', 'language', 'application', 'frameworks', 'system'], request.alive_result_list)
+        output.resultOutput(f'Alive result save to: {request.alive_path}')
         if brute:
             brute_result_list = []
             output.newLine('')
             for info in request.alive_result_list:
-                dirbrute = Dirbrute(info[1], output, brute_result_list)
+                dirbrute = Dirbrute(info.get('url'), output, brute_result_list)
                 dirbrute.run()
             save_result(request.brute_path, ['url', 'status', 'size'], brute_result_list)
+            output.resultOutput(f'Brute result save to: {request.brute_path}')
 
 
 def run(target, port, brute=False):

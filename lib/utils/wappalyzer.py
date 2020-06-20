@@ -2,6 +2,7 @@ import re
 import json
 import config
 import requests
+from bs4 import BeautifulSoup
 
 
 class Wappalyzer(object):
@@ -148,9 +149,3 @@ class Wappalyzer(object):
                     detected_apps[app['cats']].append(app_name)
         return detected_apps
 
-
-if __name__ == '__main__':
-    r = requests.get('https://www.discuz.net/', verify=False)
-    w = Wappalyzer()
-    data = w.analyze(r.url, r.text, r.headers, 'test', 'test')
-    print(data)

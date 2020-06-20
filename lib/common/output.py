@@ -61,15 +61,15 @@ class Output(object):
         sys.stdout.flush()
 
     def statusReport(self, url_info):
-        url = url_info['url']
-        status = url_info['status']
-        size = url_info['size']
-        title = url_info['title']
-        application = ','.join(url_info['application'])
-        server = ','.join(url_info['server'])
-        frameworks = ','.join(url_info['frameworks'])
-        language = ','.join(url_info['language'])
-        system = ','.join(url_info['system'])
+        url = url_info.get('url')
+        status = url_info.get('status')
+        size = url_info.get('size')
+        title = url_info.get('title')
+        application = ','.join(url_info.get('application')) if url_info.get('application') else list()
+        server = ','.join(url_info.get('server')) if url_info.get('server') else list()
+        frameworks = ','.join(url_info.get('frameworks')) if url_info.get('frameworks') else list()
+        language = ','.join(url_info.get('language')) if url_info.get('language') else list()
+        system = ','.join(url_info.get('system')) if url_info.get('system') else list()
         with self.mutex:
             url = f'{Style.BRIGHT}URL{Style.RESET_ALL}[{Fore.CYAN}{url}{Style.RESET_ALL}]'
             status = f'{Style.BRIGHT}Status{Style.RESET_ALL}[{status}]'
