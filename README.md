@@ -1,4 +1,8 @@
 # WebAliveScan
+
+**注意**
+本工具以停止更新，最新版采用Golang编写，功能更强大、速度更快。项目地址：https://github.com/broken5/bscan
+
 安装
 ```
 pip3 install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/
