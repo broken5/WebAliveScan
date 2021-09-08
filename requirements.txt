@@ -7,7 +7,7 @@ gevent==1.4.0
 greenlet==0.4.15
 idna==2.8
 lxml==4.5.0
-Pillow==7.1.1
+Pillow==8.3.2
 pycparser==2.20
 requests==2.22.0
 six==1.14.0
